@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+</html>
+<script>
+    const API_URL = 'http://localhost:3000/crm';
+    const REGISTER_URL = `${API_URL}/register`;
+    const LOGIN_URL = `${API_URL}/login`;
+    const PROFILE_URL = `${API_URL}/profile`;
+    const UPDATE_URL = `${API_URL}/update`;
+
+    // Register
+    async function register() {
+        const name = document.getElementById('registerUsername').value;
+        const password = document.getElementById('registerPassword').value;
+        const response = await fetch(REGISTER_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, password })
+        });
+        const data = await response.json();
+        alert(data.message || 'Registration successful');
+    }
+
+    // Login
+    async function login() {
+        const username = document.getElementById('loginUsername').value;
+        const password = document.getElementById('loginPassword').value;
+        // Default role to 'user' for login
+        const role = 'user';
+        const response = await fetch(LOGIN_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password, role })
+        });
+        const data = await response.json();
+        if (data.token) {
+            localStorage.setItem('token', data.token);
+            showProfile();
+        } else {
+            alert(data.message || 'Login failed');
+        }
+    }
+
+    // Get Profile
+    async function getProfile() {
+        const token = localStorage.getItem('token');
+        const response = await fetch(PROFILE_URL, {
+            headers: { 'Authorization': token }
+        });
+        return await response.json();
+    }
+
+    // Show Profile
+    async function showProfile() {
+        const user = await getProfile();
+        document.getElementById('authForms').style.display = 'none';
+        document.getElementById('profileSection').style.display = 'block';
+        document.getElementById('userInfo').innerHTML = `<p>Username: ${user.username || user.name}</p><p>Role: ${user.role || ''}</p>`;
+    }
+
+    // Logout
+    function logout() {
+        localStorage.removeItem('token');
+        document.getElementById('authForms').style.display = 'block';
+        document.getElementById('profileSection').style.display = 'none';
+    }
+</script>
+
+<div id="authForms">
+    <div>
+        <h2>Register</h2>
+        <input type="text" id="registerUsername" placeholder="Username">
+        <input type="password" id="registerPassword" placeholder="Password">
+        <button onclick="register()">Register</button>
+    </div>
+    
+    <div>
+        <h2>Login</h2>
+        <input type="text" id="loginUsername" placeholder="Username">
+        <input type="password" id="loginPassword" placeholder="Password">
+        <button onclick="login()">Login</button>
+    </div>
+</div>
+
+<div id="profileSection" style="display:none;">
+    <h2>Profile</h2>
+    <div id="userInfo"></div>
+    <button onclick="logout()">Logout</button>
+</div>
