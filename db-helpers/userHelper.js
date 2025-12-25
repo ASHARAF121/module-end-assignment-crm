@@ -42,10 +42,13 @@ exports.authenticateUser = async(username,password,role)=>{
     try {
         
         const user = await User.findOne({username,password,role})
+        console.log(user);
         if(!user){
             throw new Error('invalid cresdentials')
         }
+        return user;
     } catch (error) {
+       
         throw new Error('authentication')
         
     }

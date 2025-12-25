@@ -6,8 +6,8 @@ const {createNewUser,getUserById,updateUserById,authenticateUser} = require('../
 
 exports.register = async(req,res)=>{
     try{
-        const {name,password} = req.body
-        const newUser = await createNewUser({name,password})
+        const {username,password,role} = req.body
+        const newUser = await createNewUser({username,password,role})
         res.status(201).json(newUser)
 
 
@@ -21,20 +21,22 @@ exports.register = async(req,res)=>{
 
 exports.login = async(req,res)=>{
     const {username,password,role} = req.body
+    console.log(req.body);
     const user = await authenticateUser(username,password,role)
     if(!user){
         res.status(401).send('invalid credentials')
 
     }
-    const token = jwt.sign({userId:user.id,name:user.username,},secretKey,{expiresIn:'1hr'});
+    const token = jwt.sign({userId:user.id,username:user.username,role:user.role},secretKey,{expiresIn:'1hr'});
     res.json({message:'logged in',token})
 
 }
 
 exports.profileInfo = async(req,res)=>{
     try {
-        const user = await getUserById(req.user.userid)
-        res.json(user)
+        const {username,role} = req.user;
+        req.user = {username:username,role:role}    
+        res.json({message:'user profile info',user:req.user})
     } catch (error) {
         res.status(500).json({message:'error finding user'})
         
